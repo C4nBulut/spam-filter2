@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Spam Filtresi Ayarları</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Başlık -->
+    <div class="popup-header">
+      <span class="popup-icon">🛡️</span>
+      <div>
+        <h1 class="popup-title">Gmail Spam Filtresi</h1>
+        <span class="popup-version">v2.1.0</span>
+      </div>
+    </div>
+
+    <!-- Ayarlar -->
+    <div class="settings-section">
+      <h2 class="section-title">Ayarlar</h2>
+
+      <label class="setting-row" for="collect-toggle">
+        <div class="setting-info">
+          <span class="setting-label">Veri Toplama</span>
+          <span class="setting-desc">Mailleriniz geliştirme amaçlı toplansın mı?</span>
+        </div>
+        <div class="toggle-switch">
+          <input type="checkbox" id="collect-toggle">
+          <span class="toggle-slider"></span>
+        </div>
+      </label>
+    </div>
+
+    <!-- Durum -->
+    <div class="status-section" id="status-section">
+      <div class="status-row">
+        <span class="status-label">API Durumu</span>
+        <span class="status-badge" id="api-status">Kontrol ediliyor…</span>
+      </div>
+    </div>
+
+    <!-- Alt Bilgi -->
+    <div class="popup-footer">
+      Sağ alt köşedeki butona tıklayarak<br>açık e-postayı analiz edebilirsiniz.
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

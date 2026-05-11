@@ -10,6 +10,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime, timezone
+import json as json_module
 import joblib
 import os
 import hashlib
@@ -26,7 +28,7 @@ from langdetect import detect, LangDetectException
 app = FastAPI(
     title="Spam Filter API",
     description="Gmail Spam Filtresi Chrome Eklentisi için tahmin API'si",
-    version="2.0.0",
+    version="2.1.0",
 )
 
 # ─── CORS Middleware (geliştirme için tüm kaynaklara izin ver) ───────────────
@@ -137,6 +139,17 @@ class PredictResponse(BaseModel):
     translated: bool         # Metin çevrildiyse True
 
 
+class FeedbackRequest(BaseModel):
+    text: str                # Orijinal e-posta metni
+    prediction: str          # Modelin tahmini: "spam" | "ham"
+    is_correct: bool         # Kullanıcı onayı: True = doğru, False = yanlış
+
+
+class FeedbackResponse(BaseModel):
+    status: str
+    message: str
+
+
 # ─── Yardımcı: Dinamik UI verisi ─────────────────────────────────────────────
 def _build_ui_fields(label: str, confidence: float) -> dict:
     """
@@ -228,3 +241,87 @@ async def predict(request: PredictRequest):
     await prediction_cache.set(pred_cache_key, response)
 
     return response
+
+
+# ─── Feedback Endpoint (Kullanıcı Geri Bildirimi) ────────────────────────────
+FEEDBACK_FILE = os.path.join(os.path.dirname(__file__), "feedback_data.jsonl")
+
+
+@app.post("/feedback", response_model=FeedbackResponse)
+async def feedback(request: FeedbackRequest):
+    """
+    Kullanıcıdan gelen doğru/yanlış geri bildirimini kaydeder.
+    Şüpheli (suspicious) tahminlerden geri bildirim kabul edilmez.
+    Veriler feedback_data.jsonl dosyasına JSONL formatında yazılır.
+    """
+    text = request.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Metin boş olamaz.")
+
+    # Şüpheli kategorisinden geri bildirim almıyoruz
+    if request.prediction not in ("spam", "ham"):
+        raise HTTPException(
+            status_code=422,
+            detail="Şüpheli kategorisindeki tahminlerden geri bildirim kabul edilmez.",
+        )
+
+    # Doğru etiket: kullanıcı onayladıysa modelin tahmini, reddettiyse tersi
+    if request.is_correct:
+        correct_label = request.prediction
+    else:
+        correct_label = "ham" if request.prediction == "spam" else "spam"
+
+    entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "original_text": text,
+        "model_prediction": request.prediction,
+        "user_says_correct": request.is_correct,
+        "correct_label": correct_label,
+    }
+
+    # JSONL dosyasına async yaz
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(
+        None,
+        lambda: _append_feedback(entry),
+    )
+
+    print(f"[FEEDBACK] {correct_label} ← kullanıcı {'onayladı' if request.is_correct else 'reddetti'} (model: {request.prediction})")
+
+    return FeedbackResponse(
+        status="ok",
+        message="Geri bildiriminiz kaydedildi. Teşekkürler!",
+    )
+
+
+def _append_feedback(entry: dict):
+    """Feedback verisini JSONL dosyasına ekler (thread-safe)."""
+    with open(FEEDBACK_FILE, "a", encoding="utf-8") as f:
+        f.write(json_module.dumps(entry, ensure_ascii=False) + "\n")
+
+
+@app.get("/feedback/stats")
+async def feedback_stats():
+    """Toplanan geri bildirim verilerinin istatistiklerini döndürür."""
+    if not os.path.exists(FEEDBACK_FILE):
+        return {"total": 0, "correct": 0, "incorrect": 0, "accuracy": None}
+
+    total = correct = incorrect = 0
+    with open(FEEDBACK_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            entry = json_module.loads(line)
+            total += 1
+            if entry.get("user_says_correct"):
+                correct += 1
+            else:
+                incorrect += 1
+
+    return {
+        "total": total,
+        "correct": correct,
+        "incorrect": incorrect,
+        "accuracy": round(correct / total, 4) if total > 0 else None,
+    }
