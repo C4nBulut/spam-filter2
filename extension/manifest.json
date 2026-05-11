@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Gmail Spam Filtresi",
+  "version": "1.0.0",
+  "description": "Gmail üzerinde açık olan e-postayı analiz edip spam/ham tahmini yapar.",
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "host_permissions": [
+    "http://localhost:8000/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
