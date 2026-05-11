@@ -79,7 +79,7 @@ function showToast(type, title, body, confidence) {
   toast.classList.add(`toast-${type}`);
 
   // İkon seçimi
-  const icons = { spam: "🚫", ham: "✅", error: "⚠️", info: "ℹ️" };
+  const icons = { spam: "🚫", ham: "✅", error: "⚠️", info: "ℹ️", suspicious: "🟡" };
   const icon = icons[type] || "ℹ️";
 
   let html = `
@@ -164,19 +164,28 @@ async function handleSpamCheck() {
 
     const data = await response.json();
 
-    // ── Sonucu göster ──
-    if (data.prediction === "spam") {
+    // ── Sonucu göster (dinamik UI: color_tag & status desteği) ──
+    const translatedNote = data.translated ? " (Otomatik çeviri yapıldı)" : "";
+
+    if (data.status === "suspicious") {
+      showToast(
+        "suspicious",
+        "Şüpheli E-posta",
+        `Bu e-posta şüpheli olarak değerlendirildi.\nGüven: %${(data.confidence * 100).toFixed(1)}${translatedNote}`,
+        data.confidence
+      );
+    } else if (data.prediction === "spam") {
       showToast(
         "spam",
         "SPAM Tespit Edildi!",
-        `Bu e-posta spam olarak sınıflandırıldı.\nGüven: %${(data.confidence * 100).toFixed(1)}`,
+        `Bu e-posta spam olarak sınıflandırıldı.\nGüven: %${(data.confidence * 100).toFixed(1)}${translatedNote}`,
         data.confidence
       );
     } else {
       showToast(
         "ham",
         "Güvenli E-posta",
-        `Bu e-posta güvenli görünüyor.\nGüven: %${(data.confidence * 100).toFixed(1)}`,
+        `Bu e-posta güvenli görünüyor.\nGüven: %${(data.confidence * 100).toFixed(1)}${translatedNote}`,
         data.confidence
       );
     }
