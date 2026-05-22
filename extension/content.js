@@ -186,7 +186,7 @@ function getActiveEmailBody() {
     const elements = document.querySelectorAll(selector);
     if (elements.length > 0) {
       // Son açılan e-postayı al (birden fazla varsa en alttaki)
-      const lastElement = elements[elements.length - 1];
+      const lastElement = elements.item(elements.length - 1);
       const text = lastElement.innerText || lastElement.textContent;
       if (text && text.trim().length > 0) {
         console.log(`[Spam Filtresi] E-posta bulundu (seçici: ${selector})`);
@@ -197,6 +197,17 @@ function getActiveEmailBody() {
 
   console.warn("[Spam Filtresi] Açık e-posta bulunamadı.");
   return null;
+}
+
+/** HTML kaçış fonksiyonu (XSS koruması) */
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -221,12 +232,22 @@ function showToast(type, title, body, confidence, feedbackData) {
   toast.classList.add(`toast-${type}`);
 
   // İkon seçimi
-  const icons = { spam: "🚫", ham: "✅", error: "⚠️", info: "ℹ️", suspicious: "🟡" };
-  const icon = icons[type] || "ℹ️";
+  const iconsMap = new Map([
+    ["spam", "🚫"],
+    ["ham", "✅"],
+    ["error", "⚠️"],
+    ["info", "ℹ️"],
+    ["suspicious", "🟡"]
+  ]);
+  const icon = iconsMap.get(type) || "ℹ️";
+
+  const safeIcon = escapeHtml(icon);
+  const safeTitle = escapeHtml(title);
+  const safeBody = escapeHtml(body).replace(/\n/g, "<br>");
 
   let html = `
-    <div class="toast-title">${icon} ${title}</div>
-    <div class="toast-body">${body}</div>
+    <div class="toast-title">${safeIcon} ${safeTitle}</div>
+    <div class="toast-body">${safeBody}</div>
   `;
 
   // Güven çubuğu (varsa)

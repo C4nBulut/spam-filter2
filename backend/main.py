@@ -109,7 +109,7 @@ async def translate_to_english(text: str) -> str:
         return text
 
     # Cache kontrolü
-    cache_key = hashlib.md5(text.encode()).hexdigest()
+    cache_key = hashlib.sha256(text.encode("utf-8")).hexdigest()
     cached = await translation_cache.get(cache_key)
     if cached is not None:
         return cached
@@ -199,7 +199,7 @@ async def predict(request: PredictRequest):
         raise HTTPException(status_code=400, detail="Metin boş olamaz.")
 
     # ── Prediction cache kontrolü ──
-    pred_cache_key = hashlib.md5(text.encode()).hexdigest()
+    pred_cache_key = hashlib.sha256(text.encode("utf-8")).hexdigest()
     cached_prediction = await prediction_cache.get(pred_cache_key)
     if cached_prediction is not None:
         return cached_prediction
