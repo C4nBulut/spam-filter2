@@ -116,13 +116,16 @@ async def translate_to_english(text: str) -> str:
 
     # Asenkron olarak çeviri yap (blocking I/O → executor)
     loop = asyncio.get_event_loop()
-    translated = await loop.run_in_executor(
-        None,
-        lambda: GoogleTranslator(source="auto", target="en").translate(text),
-    )
-
-    await translation_cache.set(cache_key, translated)
-    return translated
+    try:
+        translated = await loop.run_in_executor(
+            None,
+            lambda: GoogleTranslator(source="auto", target="en").translate(text),
+        )
+        await translation_cache.set(cache_key, translated)
+        return translated
+    except Exception as e:
+        print(f"[UYARI] Ceviri servisi hatasi: {e}. Orijinal metin kullanilacak.")
+        return text
 
 
 # ─── Request / Response Şemaları ─────────────────────────────────────────────
@@ -143,6 +146,7 @@ class FeedbackRequest(BaseModel):
     text: str                # Orijinal e-posta metni
     prediction: str          # Modelin tahmini: "spam" | "ham"
     is_correct: bool         # Kullanıcı onayı: True = doğru, False = yanlış
+    user_id: str             # Benzersiz kullanıcı kimliği (Gizlilik korumalı)
 
 
 class FeedbackResponse(BaseModel):
@@ -252,6 +256,7 @@ async def feedback(request: FeedbackRequest):
     """
     Kullanıcıdan gelen doğru/yanlış geri bildirimini kaydeder.
     Şüpheli (suspicious) tahminlerden geri bildirim kabul edilmez.
+    Aynı kullanıcının aynı e-posta için mükerrer oy atması engellenir (SHA-256 ile).
     Veriler feedback_data.jsonl dosyasına JSONL formatında yazılır.
     """
     text = request.text.strip()
@@ -271,27 +276,63 @@ async def feedback(request: FeedbackRequest):
     else:
         correct_label = "ham" if request.prediction == "spam" else "spam"
 
+    # ── Kriptografik İmza ve Mükerrer Kontrolü (Gizlilik Korumalı) ──
+    hash_input = f"{request.user_id}:{text}"
+    vote_hash = hashlib.sha256(hash_input.encode("utf-8")).hexdigest()
+
+    loop = asyncio.get_event_loop()
+    is_dup = await loop.run_in_executor(
+        None,
+        lambda: _is_duplicate_vote(vote_hash),
+    )
+
+    if is_dup:
+        print(f"[FEEDBACK] Mükerrer oylama engellendi! (Gizlilik korumalı imza: {vote_hash[:12]}...)")
+        return FeedbackResponse(
+            status="duplicate",
+            message="Bu e-posta için zaten geri bildirim gönderdiniz.",
+        )
+
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "original_text": text,
         "model_prediction": request.prediction,
         "user_says_correct": request.is_correct,
         "correct_label": correct_label,
+        "vote_hash": vote_hash,  # Log dosyasında user_id ASLA saklanmaz, sadece bu hash saklanır!
     }
 
     # JSONL dosyasına async yaz
-    loop = asyncio.get_event_loop()
     await loop.run_in_executor(
         None,
         lambda: _append_feedback(entry),
     )
 
-    print(f"[FEEDBACK] {correct_label} ← kullanıcı {'onayladı' if request.is_correct else 'reddetti'} (model: {request.prediction})")
+    print(f"[FEEDBACK] {correct_label} <- kullanici {'onayladi' if request.is_correct else 'reddetti'} (model: {request.prediction})")
 
     return FeedbackResponse(
         status="ok",
         message="Geri bildiriminiz kaydedildi. Teşekkürler!",
     )
+
+
+def _is_duplicate_vote(vote_hash: str) -> bool:
+    """Aynı kullanıcının aynı e-postayı daha önce oylayıp oylamadığını kontrol eder (Gizlilik Korumalı)."""
+    if not os.path.exists(FEEDBACK_FILE):
+        return False
+
+    with open(FEEDBACK_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json_module.loads(line)
+                if entry.get("vote_hash") == vote_hash:
+                    return True
+            except Exception:
+                continue
+    return False
 
 
 def _append_feedback(entry: dict):

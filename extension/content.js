@@ -6,12 +6,13 @@
  * FastAPI backend'ine gönderir ve sonucu toast bildirim olarak gösterir.
  */
 
-const API_URL = "http://localhost:8000/predict";
-const FEEDBACK_URL = "http://localhost:8000/feedback";
+const API_URL = "http://127.0.0.1:8000/predict";
+const FEEDBACK_URL = "http://127.0.0.1:8000/feedback";
 
 // ─── Kullanıcı Ayarları ─────────────────────────────────────────────────────
 let userSettings = {
   collectData: false, // Varsayılan: kapalı
+  userId: null,
 };
 
 /** chrome.storage'dan ayarları yükle */
@@ -20,6 +21,18 @@ function loadSettings() {
     chrome.storage.sync.get({ collectData: false }, (result) => {
       userSettings.collectData = result.collectData;
       console.log("[Spam Filtresi] Ayarlar yüklendi:", userSettings);
+    });
+
+    // Benzersiz kullanıcı ID'sini yükle veya oluştur (Gizlilik korumalı)
+    chrome.storage.local.get({ userId: null }, (result) => {
+      if (result.userId) {
+        userSettings.userId = result.userId;
+      } else {
+        const rand = () => Math.random().toString(36).substring(2, 15);
+        userSettings.userId = "usr_" + rand() + rand();
+        chrome.storage.local.set({ userId: userSettings.userId });
+      }
+      console.log("[Spam Filtresi] Anonim Kullanıcı ID'si yüklendi:", userSettings.userId);
     });
 
     // Ayar değiştiğinde (popup'tan) anlık güncelle
@@ -310,19 +323,34 @@ async function sendFeedback(text, prediction, isCorrect, toast) {
     const response = await fetch(FEEDBACK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, prediction, is_correct: isCorrect }),
+      body: JSON.stringify({
+        text,
+        prediction,
+        is_correct: isCorrect,
+        user_id: userSettings.userId || "anonymous"
+      }),
     });
 
     if (!response.ok) throw new Error("Feedback gönderilemedi");
 
+    const data = await response.json().catch(() => ({ status: "ok" }));
+
     // Butonları geri bildirim mesajıyla değiştir
     const section = toast.querySelector(".feedback-section");
     if (section) {
-      section.innerHTML = `
-        <div class="feedback-thanks">
-          ${isCorrect ? "👍" : "👎"} Geri bildiriminiz kaydedildi. Teşekkürler!
-        </div>
-      `;
+      if (data.status === "duplicate") {
+        section.innerHTML = `
+          <div class="feedback-thanks">
+            ℹ️ Bu e-postayı zaten oyladınız!
+          </div>
+        `;
+      } else {
+        section.innerHTML = `
+          <div class="feedback-thanks">
+            ${isCorrect ? "👍" : "👎"} Geri bildiriminiz kaydedildi. Teşekkürler!
+          </div>
+        `;
+      }
     }
 
     console.log(`[Spam Filtresi] Feedback gönderildi: ${isCorrect ? "doğru" : "yanlış"}`);
@@ -445,11 +473,10 @@ if (document.readyState === "loading") {
   createSpamButton();
 }
 
-// Gmail'de sayfa içi navigasyon olduğunda butonun kaybolmaması için gözlemle
-const observer = new MutationObserver(() => {
+// Gmail'de sayfa içi navigasyon olduğunda butonun kaybolmaması için hafif bir zamanlayıcı kullanalım
+// Agresif MutationObserver yerine bu yöntem işlemci yükünü sıfıra indirir.
+setInterval(() => {
   if (!document.getElementById("spam-filter-btn")) {
     createSpamButton();
   }
-});
-
-observer.observe(document.body, { childList: true, subtree: true });
+}, 1500);

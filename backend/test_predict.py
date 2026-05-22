@@ -12,7 +12,7 @@ import requests
 import json
 import time
 
-API_URL = "http://localhost:8000/predict"
+API_URL = "http://127.0.0.1:8000/predict"
 
 # ─── Test Metinleri ──────────────────────────────────────────────────────────
 test_cases = [

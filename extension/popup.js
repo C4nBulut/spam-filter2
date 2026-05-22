@@ -3,7 +3,7 @@
  * Uzantı ayarlarını yönetir.
  */
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://127.0.0.1:8000";
 
 // ─── Ayarları Yükle ──────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
@@ -26,6 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // ─── API Sağlık Kontrolü ────────────────────────────────────────────────────
 async function checkApiStatus() {
   const badge = document.getElementById("api-status");
+  
+  // Clear any existing state classes to prevent styling conflicts
+  badge.classList.remove("status-ok", "status-error");
 
   try {
     const response = await fetch(API_BASE + "/", { signal: AbortSignal.timeout(3000) });
