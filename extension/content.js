@@ -241,55 +241,79 @@ function showToast(type, title, body, confidence, feedbackData) {
   ]);
   const icon = iconsMap.get(type) || "ℹ️";
 
-  const safeIcon = escapeHtml(icon);
-  const safeTitle = escapeHtml(title);
-  const safeBody = escapeHtml(body).replace(/\n/g, "<br>");
+  // 1. Başlık Alanı (Tamamen Güvenli textContent)
+  const titleDiv = document.createElement("div");
+  titleDiv.className = "toast-title";
+  titleDiv.textContent = `${icon} ${title}`;
+  toast.appendChild(titleDiv);
 
-  let html = `
-    <div class="toast-title">${safeIcon} ${safeTitle}</div>
-    <div class="toast-body">${safeBody}</div>
-  `;
+  // 2. Gövde Alanı (Satır sonlarını koruyarak Güvenli textContent/createTextNode ile oluşturma)
+  const bodyDiv = document.createElement("div");
+  bodyDiv.className = "toast-body";
+  const lines = (body || "").split("\n");
+  lines.forEach((line, idx) => {
+    if (idx > 0) {
+      bodyDiv.appendChild(document.createElement("br"));
+    }
+    bodyDiv.appendChild(document.createTextNode(line));
+  });
+  toast.appendChild(bodyDiv);
 
-  // Güven çubuğu (varsa)
+  // 3. Güven Çubuğu (varsa)
   if (typeof confidence === "number") {
-    html += `
-      <div class="confidence-bar-track">
-        <div class="confidence-bar-fill" style="width: 0%"></div>
-      </div>
-    `;
+    const trackDiv = document.createElement("div");
+    trackDiv.className = "confidence-bar-track";
+    const fillDiv = document.createElement("div");
+    fillDiv.className = "confidence-bar-fill";
+    fillDiv.style.width = "0%";
+    trackDiv.appendChild(fillDiv);
+    toast.appendChild(trackDiv);
   }
 
-  // Geri bildirim butonları (ayar açık + şüpheli değil)
+  // 4. Geri Bildirim Butonları (ayar açık + şüpheli değil)
   const showFeedback = feedbackData && userSettings.collectData;
   if (showFeedback) {
-    html += `
-      <div class="feedback-section">
-        <span class="feedback-label">Tahmin doğru mu?</span>
-        <div class="feedback-buttons">
-          <button class="feedback-btn feedback-up" data-correct="true" title="Evet, doğru">
-            <svg class="feedback-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>
-          </button>
-          <button class="feedback-btn feedback-down" data-correct="false" title="Hayır, yanlış">
-            <svg class="feedback-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg>
-          </button>
-        </div>
-      </div>
-    `;
-  }
+    const sectionDiv = document.createElement("div");
+    sectionDiv.className = "feedback-section";
 
-  toast.innerHTML = html;
-  document.body.appendChild(toast);
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "feedback-label";
+    labelSpan.textContent = "Tahmin doğru mu?";
+    sectionDiv.appendChild(labelSpan);
 
-  // Geri bildirim buton event'leri
-  if (showFeedback) {
-    toast.querySelectorAll(".feedback-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation(); // Toast'ın kapanmasını engelle
-        const isCorrect = e.currentTarget.dataset.correct === "true";
-        sendFeedback(feedbackData.text, feedbackData.prediction, isCorrect, toast);
-      });
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.className = "feedback-buttons";
+
+    // Evet (Up) butonu
+    const btnUp = document.createElement("button");
+    btnUp.className = "feedback-btn feedback-up";
+    btnUp.dataset.correct = "true";
+    btnUp.title = "Evet, doğru";
+    // Statik SVG içeriğini ekleme (Zararlı değişken enjeksiyonu barındırmayan tamamen sabit kod)
+    btnUp.innerHTML = `<svg class="feedback-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>`;
+    btnUp.addEventListener("click", (e) => {
+      e.stopPropagation(); // Toast'ın kapanmasını engelle
+      sendFeedback(feedbackData.text, feedbackData.prediction, true, toast);
     });
+    buttonsDiv.appendChild(btnUp);
+
+    // Hayır (Down) butonu
+    const btnDown = document.createElement("button");
+    btnDown.className = "feedback-btn feedback-down";
+    btnDown.dataset.correct = "false";
+    btnDown.title = "Hayır, yanlış";
+    btnDown.innerHTML = `<svg class="feedback-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg>`;
+    btnDown.addEventListener("click", (e) => {
+      e.stopPropagation(); // Toast'ın kapanmasını engelle
+      sendFeedback(feedbackData.text, feedbackData.prediction, false, toast);
+    });
+    buttonsDiv.appendChild(btnDown);
+
+    sectionDiv.appendChild(buttonsDiv);
+    toast.appendChild(sectionDiv);
   }
+
+  document.body.appendChild(toast);
 
   // Animasyonu tetikle
   requestAnimationFrame(() => {
