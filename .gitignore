@@ -21,3 +21,7 @@ venv.bak/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local Deployment Guidelines
+DEPLOYMENT.md
+

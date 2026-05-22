@@ -1,4 +1,4 @@
-# 🛡️ Gmail Spam Filtresi v2 — Chrome MV3 & FastAPI
+# Gmail Spam Filtresi v2 — Chrome MV3 & FastAPI
 
 Gmail e-postalarınızı yapay zeka tabanlı algoritmalarla tarayan, şüpheli içerikleri anlık olarak analiz eden ve kullanıcı gizliliğini %100 koruyan gelişmiş bir Chrome Eklentisi ve FastAPI backend uygulamasıdır.
 
@@ -6,19 +6,19 @@ Eklenti, Gmail arayüzüne entegre olan sürükle-bırak destekli koruyucu bir b
 
 ---
 
-## 📸 Ekran Görüntüleri (Screenshots)
+## Ekran Görüntüleri (Screenshots)
 
 <!-- Görsel Boşluğu 1: Arayüz ve Genel Görünüm -->
-> 🖼️ **[Görsel Ekle: Genel Kullanım Arayüzü ve Eklenti Pop-up Menüsü]**
+> **[Görsel Ekle: Genel Kullanım Arayüzü ve Eklenti Pop-up Menüsü]**
 > *Gmail üzerinde duran sürüklenebilir koruma butonu ve sağ üstteki pop-up menünün görselini buraya yerleştirebilirsiniz.*
 
 <!-- Görsel Boşluğu 2: Toast Bildirim Kutusu ve 👍/👎 Butonları -->
-> 🖼️ **[Görsel Ekle: Modern Toast Bildirimi ve Lucide SVG Oylama Butonları]**
+> **[Görsel Ekle: Modern Toast Bildirimi ve Lucide SVG Oylama Butonları]**
 > *Bir e-posta tarandıktan sonra çıkan anlık bildirim panelinin ve yeşil/kırmızı oylama animasyonlarının görselini buraya ekleyebilirsiniz.*
 
 ---
 
-## ✨ Öne Çıkan Özellikler (Features)
+## Öne Çıkan Özellikler (Features)
 
 *   **Sürüklenebilir Akıllı Buton:** Gmail DOM'u ile tam uyumlu, ekran kenarlarına animasyonlu yapışan (snap-to-edge) ve CPU'yu yormayan sürükle-bırak kontrol butonu.
 *   **Cam Efektli (Glassmorphism) Toast Bildirimleri:** Tahmin sonuçlarını (Ham / Spam / Şüpheli) ve güven oranını şık mikro-animasyonlar ve progres çubukları ile gösteren modern bildirim kutuları.
@@ -29,7 +29,7 @@ Eklenti, Gmail arayüzüne entegre olan sürükle-bırak destekli koruyucu bir b
 
 ---
 
-## 🏛️ Mimari Yapı (Architecture)
+## Mimari Yapı (Architecture)
 
 ```mermaid
 graph TD
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma (Installation & Setup)
+## Kurulum ve Çalıştırma (Installation & Setup)
 
 Proje iki ana bileşenden oluşmaktadır: **Python FastAPI Backend** ve **Chrome MV3 Uzantısı**.
 
@@ -79,15 +79,8 @@ Proje iki ana bileşenden oluşmaktadır: **Python FastAPI Backend** ve **Chrome
 
 ---
 
-## ⚙️ Yerel Ağda veya Başka Cihazda Çalıştırma
-Sunucuyu yerel ağdaki (LAN) başka bir cihaza taşımak ve eklentiyi o adrese bağlamak isterseniz, adım adım anlatımı içeren **[DEPLOYMENT.md](file:///c:/mycodes/personal/spam-filter2/DEPLOYMENT.md)** kılavuzunu inceleyebilirsiniz.
-
----
-
-## 🔒 Güvenlik Sertifikasyonu (Security Audit)
+## Güvenlik Sertifikasyonu (Security Audit)
 Uygulama, **SecureCoder** statik analiz aracı denetimlerinden başarıyla geçmiştir. 
 *   Braket notasyonları (`[]`) yerine prototip kirlenmesini önleyen JavaScript `Map` yapıları kullanılmıştır.
 *   `innerHTML` yerine tamamen `createTextNode` tabanlı güvenli DOM inşası uygulanmıştır.
 *   Kriptografik cache yapısında MD5 yerine yüksek dirençli **SHA-256** tercih edilmiştir.
-
-Detaylı denetim raporlarına **[walkthrough.md](file:///c:/Users/can/.gemini/antigravity-ide/brain/c7b7a56d-f0f5-4799-99dc-457d61be4343/walkthrough.md)** dosyasından ulaşabilirsiniz.
