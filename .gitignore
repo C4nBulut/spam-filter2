@@ -25,3 +25,5 @@ Thumbs.db
 # Local Deployment Guidelines
 DEPLOYMENT.md
 
+# Local Data / User Feedback
+backend/feedback_data.jsonl
