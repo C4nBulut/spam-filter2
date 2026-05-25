@@ -112,7 +112,7 @@
   border-left: 4px solid #c7d2fe;
 }
 
-/* Şüpheli durumu (confidence %50-60) */
+/* Şüpheli durumu (confidence %50-55) */
 #spam-filter-toast.toast-suspicious {
   background: linear-gradient(135deg, rgba(234, 179, 8, 0.92), rgba(161, 98, 7, 0.92));
   border-left: 4px solid #fde68a;

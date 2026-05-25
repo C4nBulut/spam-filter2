@@ -330,8 +330,8 @@ function showToast(type, title, body, confidence, feedbackData) {
     }
   });
 
-  // Feedback varsa 20sn, yoksa 5sn sonra otomatik kapat
-  const dismissDelay = showFeedback ? 20000 : 5000;
+  // Feedback varsa 15sn, yoksa 5sn sonra otomatik kapat
+  const dismissDelay = showFeedback ? 15000 : 5000;
   const autoCloseTimer = setTimeout(() => {
     dismissToast(toast);
   }, dismissDelay);

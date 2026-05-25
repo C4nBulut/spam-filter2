@@ -28,7 +28,7 @@ from langdetect import detect, LangDetectException
 app = FastAPI(
     title="Spam Filter API",
     description="Gmail Spam Filtresi Chrome Eklentisi için tahmin API'si",
-    version="2.4.6",
+    version="2.4.7",
 )
 
 # ─── CORS Middleware (geliştirme için tüm kaynaklara izin ver) ───────────────
@@ -158,13 +158,13 @@ class FeedbackResponse(BaseModel):
 def _build_ui_fields(label: str, confidence: float) -> dict:
     """
     Güven oranına göre color_tag ve status belirler.
-    • Confidence %50-60 → yellow / suspicious
+    • Confidence %50-55 → yellow / suspicious
     • spam  → red / spam
     • ham   → green / safe
     """
     pct = confidence * 100
 
-    if 50 <= pct <= 60:
+    if 50 <= pct <= 55:
         return {"color_tag": "yellow", "status": "suspicious"}
     elif label == "spam":
         return {"color_tag": "red", "status": "spam"}

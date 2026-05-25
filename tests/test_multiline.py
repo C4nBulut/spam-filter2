@@ -20,7 +20,7 @@ test_cases = [
 
 We found your profile online and would like to offer you a high-paying remote job. No experience required.
 
-To get started, please send your personal details and a small registration fee of $50."""
+To get started, please send your personal details and a small registration fee of $500."""
     },
     {
         "id": 2,

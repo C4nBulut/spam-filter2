@@ -111,7 +111,7 @@ async def run_benchmark():
 ======================================================================
 Tarih/Saat      : {time.strftime('%Y-%m-%d %H:%M:%S')}
 Test Edilen URL : {API_URL}
-Model Sürümü    : v2.4.6 (Yeni Multinomial Naive Bayes)
+Model Sürümü    : v2.4.7 (Yeni Multinomial Naive Bayes)
 
 ----------------------------------------------------------------------
 1. CACHE MISS PERFORMANSI (Sıralı 20 Yeni İstek - Çeviri/NLP Aktif)
