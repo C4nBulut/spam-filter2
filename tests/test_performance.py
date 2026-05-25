@@ -148,14 +148,8 @@ Maksimum Süre  : {concur_stats['max']:.2f} ms
 95. Yüzdelik (p95): {concur_stats['p95']:.2f} ms
 99. Yüzdelik (p99): {concur_stats['p99']:.2f} ms
 
-======================================================================
-Özet Analiz:
-- API Cache Hit durumunda mikrosaniyeler seviyesinde (aşırı hızlı) yanıt vermektedir.
-- Sıralı cache miss durumlarında bile GoogleTranslator / LangDetect ve model tahminleri
-  ortalama makul süreler içinde tamamlanmaktadır.
-- Eşzamanlı yük altında asenkron mimari (FastAPI + Async LRUCache) sayesinde 
-  kilitlenme yaşamadan yüksek throughput oranlarına ulaşılmaktadır.
-======================================================================
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 """
 
     print(report)
@@ -164,8 +158,11 @@ Maksimum Süre  : {concur_stats['max']:.2f} ms
     import os
     script_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(script_dir)
-    output_filepath = os.path.join(parent_dir, "speed_test_results.txt")
-    with open(output_filepath, "w", encoding="utf-8") as f:
+    output_filepath = os.path.join(parent_dir, "tests", "speed_test_results.txt")
+    file_exists = os.path.exists(output_filepath) and os.path.getsize(output_filepath) > 0
+    with open(output_filepath, "a", encoding="utf-8") as f:
+        if file_exists:
+            f.write("\n\n" + "=" * 70 + "\n\n")
         f.write(report)
     print(f"\n[OK] Sonuçlar başarıyla '{output_filepath}' dosyasına yazıldı.")
 
