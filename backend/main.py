@@ -28,7 +28,7 @@ from langdetect import detect, LangDetectException
 app = FastAPI(
     title="Spam Filter API",
     description="Gmail Spam Filtresi Chrome Eklentisi için tahmin API'si",
-    version="2.1.0",
+    version="2.4.6",
 )
 
 # ─── CORS Middleware (geliştirme için tüm kaynaklara izin ver) ───────────────
@@ -198,15 +198,19 @@ async def predict(request: PredictRequest):
     if not text:
         raise HTTPException(status_code=400, detail="Metin boş olamaz.")
 
-    # ── Prediction cache kontrolü ──
+    # Satır sonlarını ve gereksiz boşlukları temizleyerek tek bir boşlukla birleştirin.
+    # Bu işlem dil algılama, otomatik çeviri ve tokenizasyonun çok daha sağlıklı çalışmasını sağlar.
+    normalized_text = " ".join(text.split())
+
+    # ── Prediction cache kontrolü (Orijinal metin üzerinden) ──
     pred_cache_key = hashlib.sha256(text.encode("utf-8")).hexdigest()
     cached_prediction = await prediction_cache.get(pred_cache_key)
     if cached_prediction is not None:
         return cached_prediction
 
-    # ── Otomatik çeviri (gerekirse) ──
-    was_translated = not _is_english(text)
-    english_text = await translate_to_english(text)
+    # ── Otomatik çeviri (gerekirse - normalize edilmiş metin ile) ──
+    was_translated = not _is_english(normalized_text)
+    english_text = await translate_to_english(normalized_text)
 
     # ── Vektörize et (CPU-bound → executor) ──
     loop = asyncio.get_event_loop()

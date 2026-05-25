@@ -27,3 +27,6 @@ DEPLOYMENT.md
 
 # Local Data / User Feedback
 backend/feedback_data.jsonl
+
+# Benchmarks & Tests
+tests/speed_test_results.txt
