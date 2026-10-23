@@ -164,7 +164,7 @@ def _build_ui_fields(label: str, confidence: float) -> dict:
     """
     pct = confidence * 100
 
-    if 50 <= pct <= 55:
+    if 50 <= pct < 55:
         return {"color_tag": "yellow", "status": "suspicious"}
     elif label == "spam":
         return {"color_tag": "red", "status": "spam"}
