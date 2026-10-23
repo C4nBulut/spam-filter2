@@ -1,0 +1,18 @@
+# Render Blueprint — ücretsiz (Free) web servisi
+# Kullanım: Render Dashboard > New > Blueprint > bu depoyu seç.
+# Free plan: 15 dk hareketsizlikte uykuya girer, ilk istekte ~1 dk içinde uyanır.
+# Not: Python sürümü 3.12'ye sabitlendi; scikit-learn 1.5.2 için 3.14 wheel'i yok.
+services:
+  - type: web
+    name: spam-filter-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"

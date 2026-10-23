@@ -1,0 +1,23 @@
+# Sürüm kontrolü / editör artıkları
+.git
+.gitignore
+.idea
+.vscode
+__pycache__
+*.py[cod]
+*.egg-info
+
+# Sanal ortamlar
+venv
+.venv
+env
+ENV
+
+# Kullanıcı verisi (imaja girmemeli)
+feedback_data.jsonl
+
+# Test ve dokümantasyon imaja gerekmiyor
+tests
+*.md
+Dockerfile
+.dockerignore
