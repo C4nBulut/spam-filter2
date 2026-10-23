@@ -6,8 +6,9 @@
  * FastAPI backend'ine gönderir ve sonucu toast bildirim olarak gösterir.
  */
 
-const API_URL = "http://127.0.0.1:8000/predict";
-const FEEDBACK_URL = "http://127.0.0.1:8000/feedback";
+// Canlı (Render) backend — demo sürümü
+const API_URL = "https://spam-filter-api-g03y.onrender.com/predict";
+const FEEDBACK_URL = "https://spam-filter-api-g03y.onrender.com/feedback";
 
 // ─── Kullanıcı Ayarları ─────────────────────────────────────────────────────
 let userSettings = {
@@ -499,7 +500,7 @@ async function handleSpamCheck() {
     // Kullanıcıya anlaşılır hata mesajı
     let errorMsg = error.message;
     if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
-      errorMsg = "API sunucusuna bağlanılamıyor. FastAPI'nin çalıştığından emin olun (localhost:8000).";
+      errorMsg = "API sunucusuna bağlanılamıyor. Sunucu uykuda olabilir; birkaç saniye sonra tekrar deneyin.";
     }
 
     showToast("error", "Bağlantı Hatası", errorMsg);

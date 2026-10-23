@@ -3,7 +3,7 @@
  * Uzantı ayarlarını yönetir.
  */
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://spam-filter-api-g03y.onrender.com";
 
 // ─── Ayarları Yükle ──────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {

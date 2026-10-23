@@ -6,6 +6,20 @@ Eklenti, Gmail arayüzüne entegre olan sürükle-bırak destekli koruyucu bir b
 
 ---
 
+## Canlı Demo (Render — ücretsiz plan)
+
+| Bileşen | Adres |
+| :--- | :--- |
+| API kökü | https://spam-filter-api-g03y.onrender.com |
+| Swagger (tarayıcıdan test) | https://spam-filter-api-g03y.onrender.com/docs |
+
+> [!NOTE]
+> **Uyku modu:** Ücretsiz planda servis 15 dakika istek almazsa uykuya girer. Demodan önce kök adresi (`/`) bir kez açılır; ilk istek yaklaşık 1 dakika sürebilir, sonraki istekler hızlıdır. `backend/models/` altındaki model dosyaları imaja dahildir.
+>
+> **Kalıcılık:** Ücretsiz planda kalıcı disk yoktur; `backend/feedback_data.jsonl` her yeniden başlatmada sıfırlanır. Demo amaçlı kabul edilebilir bir sınırlamadır.
+
+---
+
 ## Ekran Görüntüleri (Screenshots)
 
 <!-- Görsel Boşluğu 1: Arayüz ve Genel Görünüm -->
